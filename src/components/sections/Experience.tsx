@@ -55,6 +55,7 @@ function ProjectSubItem({ proj, delayIndex }: ProjectSubItemProps) {
       </div>
       <Collapsible
         trigger={null}
+        tags={proj.tags}
         details={
           <ul className="list-disc list-inside text-[15px] font-light space-y-2 pt-2 mt-2 border-t border-white/5">
             {proj.details.map(dKey => (

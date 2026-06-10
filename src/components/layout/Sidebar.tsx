@@ -78,7 +78,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
               <i className="ri-mail-line" />
             </a>
             <a
-              href="#"
+              href="https://www.linkedin.com/in/bowen-zheng-owen"
               className="social-icon"
               title={t('social_linkedin')}
               aria-label={t('social_linkedin')}
@@ -86,7 +86,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
               <i className="ri-linkedin-box-line" />
             </a>
             <a
-              href="#"
+              href="https://github.com/bzhengak/BowenZheng.github.io"
               className="social-icon"
               title={t('social_github')}
               aria-label={t('social_github')}

@@ -18,6 +18,7 @@ import { Extras } from './components/sections/Extras';
 function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const lenisRef = useLenis();
+  const scrollGradientRef = useRef<HTMLDivElement>(null);
 
   // 视口宽度变化时关闭移动端菜单
   useEffect(() => {
@@ -28,8 +29,30 @@ function AppShell() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  // 滚动驱动渐变背景: 根据 scroll percentage 微调渐变位置
+  useEffect(() => {
+    const el = scrollGradientRef.current;
+    if (!el) return;
+    let rafId = 0;
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+        el.style.setProperty('--scroll-pct', String(pct));
+        rafId = 0;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   return (
     <div className="app-shell">
+      <div ref={scrollGradientRef} className="scroll-gradient-bg" />
       <Cursor />
       <ProgressBar lenisRef={lenisRef} />
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />

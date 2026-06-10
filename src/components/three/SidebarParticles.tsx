@@ -3,11 +3,77 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
- * 侧边栏内的 3D 粒子星云
- * - 600 颗粒子, 球壳分布
- * - 鼠标移动 → 相机视差
- * - 主题色根据 dark/light 切换 (硬编码 fallback, 因为 R3F 在 canvas 内)
+ * 侧边栏内的 3D 星空粒子
+ * - 自定义 ShaderMaterial: 中心实心 + 边缘高斯衰减的圆形 sprite
+ * - 每个粒子有独立 phase, size 和 opacity 在 0.5×~1.5× 之间慢速呼吸 (twinkle)
+ * - 距离相机越远: size 越小, 亮度越低 (深度视差 + 层次感)
+ * - 主题色根据 dark/light 切换
  */
+
+// 星空专用的 vertex shader
+const starVertex = /* glsl */ `
+  attribute float aSize;
+  attribute float aPhase;
+  attribute float aDepth;
+  attribute vec3 color;
+  uniform float uTime;
+  uniform float uPixelRatio;
+
+  varying float vDepth;
+  varying float vTwinkle;
+  varying vec3 vColor;
+
+  void main() {
+    float t = uTime * 0.6 + aPhase * 6.2831;
+    float tw = 0.5 + 0.5 * sin(t);
+    float twinkle = mix(0.6, 1.4, tw);
+
+    vDepth = aDepth;
+    vTwinkle = twinkle;
+    vColor = color;
+
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+    float distAtten = 1.0 / -mvPosition.z;
+    float depthScale = mix(1.0, 0.35, aDepth);
+
+    gl_PointSize = aSize * twinkle * distAtten * uPixelRatio * depthScale * 60.0;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+// 星空专用的 fragment shader: 中心实心 + 高斯衰减光晕
+const starFragment = /* glsl */ `
+  uniform float uBrightness;
+  varying float vDepth;
+  varying float vTwinkle;
+  varying vec3 vColor;
+
+  void main() {
+    // gl_PointCoord 是 0~1 的方格坐标, 中心 (0.5, 0.5)
+    vec2 uv = gl_PointCoord - 0.5;
+    float dist = length(uv);
+
+    // 中心实心核 (很小的硬核)
+    float core = smoothstep(0.18, 0.0, dist);
+
+    // 高斯光晕 (大范围柔光)
+    float halo = exp(-dist * dist * 18.0);
+
+    // 合并: 核 + 光晕
+    float alpha = (core * 0.9 + halo * 0.55) * uBrightness * vTwinkle;
+
+    // 远处粒子整体更暗
+    alpha *= mix(1.0, 0.35, vDepth);
+
+    if (alpha < 0.01) discard;
+
+    // 中心更白, 边缘是颜色 (模拟恒星色温)
+    vec3 finalColor = mix(vColor, vec3(1.0), core * 0.6);
+
+    gl_FragColor = vec4(finalColor, alpha);
+  }
+`;
 
 interface StarCloudProps {
   count?: number;
@@ -17,52 +83,95 @@ interface StarCloudProps {
 
 function StarCloud({ count = 600, isDark, mouseParallax }: StarCloudProps) {
   const pointsRef = useRef<THREE.Points>(null);
-  const { camera } = useThree();
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const { camera, size, gl } = useThree();
+  const pixelRatio = Math.min(gl.getPixelRatio(), 2);
 
   // 生成球壳分布的粒子
-  const { positions, colors, sizes } = useMemo(() => {
+  const { positions, colors, sizes, phases, depths } = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const siz = new Float32Array(count);
+    const ph = new Float32Array(count);
+    const dp = new Float32Array(count);
 
-    // 暗色用冷色 (蓝紫青), 亮色用更暖的色 (粉橙)
+    // 暗色: 暗色为主 6 色 + 亮色 4 色 (更克制)
     const palette = isDark
       ? [
-          [0.65, 0.55, 1.0],   // purple
-          [0.38, 0.65, 1.0],   // blue
-          [0.02, 0.71, 0.83],  // cyan
-          [0.20, 0.83, 0.60],  // green
-          [0.95, 0.45, 0.71],  // pink
-          [0.0, 0.44, 0.89],   // apple blue
+          // 暗色 (主) - 60%
+          [0.55, 0.60, 0.85],  // 暗蓝紫
+          [0.45, 0.55, 0.90],  // 暗蓝
+          [0.40, 0.65, 0.95],  // 冷蓝
+          [0.50, 0.70, 0.88],  // 天蓝
+          [0.55, 0.72, 0.92],  // 浅蓝
+          [0.60, 0.75, 0.85],  // 银蓝
+          // 亮色 (点缀) - 40%
+          [0.85, 0.90, 1.00],  // 亮银白
+          [0.90, 0.95, 1.00],  // 冷白
+          [0.80, 0.88, 1.00],  // 亮蓝
+          [0.95, 0.98, 1.00],  // 纯白
         ]
       : [
-          [0.45, 0.55, 1.0],
-          [1.0, 0.55, 0.7],
-          [0.6, 0.85, 1.0],
-          [0.95, 0.78, 0.5],
+          // 亮色: 4 色 (克制)
+          [0.55, 0.65, 0.95],
+          [0.95, 0.70, 0.80],
+          [0.70, 0.85, 1.00],
+          [0.95, 0.85, 0.65],
         ];
 
     for (let i = 0; i < count; i++) {
-      // 球壳分布
-      const radius = 2.2 + Math.random() * 1.8;
+      // 球壳分布, 半径紧凑使星点更密集
+      const radius = 1.6 + Math.random() * 1.4;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       pos[i * 3 + 0] = radius * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = radius * Math.cos(phi);
 
+      // 3 级 size: 大星 5% / 中星 25% / 小星 70%
+      const rand = Math.random();
+      if (rand < 0.25) {
+        siz[i] = 0.35 + Math.random() * 0.2;  // 大星: 0.14~0.24
+      } else if (rand < 0.50) {
+        siz[i] = 0.18 + Math.random() * 0.1;  // 中星: 0.06~0.12
+      } else {
+        siz[i] = 0.08 + Math.random() * 0.08; // 小星: 0.018~0.053
+      }
+
       const c = palette[Math.floor(Math.random() * palette.length)];
       col[i * 3 + 0] = c[0];
       col[i * 3 + 1] = c[1];
       col[i * 3 + 2] = c[2];
 
-      siz[i] = Math.random() * 0.08 + 0.015;
+      // 每个粒子独立相位 (twinkle)
+      ph[i] = Math.random();
+
+      // 深度: 归一化 (0=近, 1=远), 基于 z 坐标
+      dp[i] = Math.max(0, Math.min(1, (pos[i * 3 + 2] + 1.6) / 3.0));
     }
-    return { positions: pos, colors: col, sizes: siz };
+    return { positions: pos, colors: col, sizes: siz, phases: ph, depths: dp };
   }, [count, isDark]);
 
-  // 缓慢自转
-  useFrame((_, delta) => {
+  // shader uniform: 整体亮度
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: starVertex,
+      fragmentShader: starFragment,
+      uniforms: {
+        uTime: { value: 0 },
+        uPixelRatio: { value: pixelRatio },
+        uBrightness: { value: isDark ? 1.0 : 0.75 },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+  }, [isDark, pixelRatio]);
+
+  useFrame((state, delta) => {
+    if (materialRef.current) {
+      materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+    }
     if (pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.05;
       pointsRef.current.rotation.x += delta * 0.02;
@@ -86,16 +195,20 @@ function StarCloud({ count = 600, isDark, mouseParallax }: StarCloudProps) {
           attach="attributes-color"
           args={[colors, 3]}
         />
+        <bufferAttribute
+          attach="attributes-aSize"
+          args={[sizes, 1]}
+        />
+        <bufferAttribute
+          attach="attributes-aPhase"
+          args={[phases, 1]}
+        />
+        <bufferAttribute
+          attach="attributes-aDepth"
+          args={[depths, 1]}
+        />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.05}
-        vertexColors
-        transparent
-        opacity={isDark ? 0.85 : 0.7}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
+      <primitive object={material} ref={materialRef} attach="material" />
     </points>
   );
 }
@@ -130,8 +243,7 @@ export function SidebarParticles({ isDark }: SidebarParticlesProps) {
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.5} />
-        <StarCloud count={isDark ? 600 : 480} isDark={isDark} mouseParallax={mouseParallax} />
+        <StarCloud count={isDark ? 1200 : 1000} isDark={isDark} mouseParallax={mouseParallax} />
       </Canvas>
     </div>
   );

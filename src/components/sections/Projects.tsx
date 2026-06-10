@@ -35,6 +35,7 @@ function ProjectCard({ item, index }: ProjectCardProps) {
       <p className="text-sm text-accent font-semibold mb-4">{t(item.summaryKey)}</p>
       <Collapsible
         trigger={null}
+        tags={item.tags}
         details={
           <ul className="list-disc list-inside text-[15px] font-light space-y-2 pt-2 mt-2 border-t border-white/5">
             {item.details.map(dKey => (
