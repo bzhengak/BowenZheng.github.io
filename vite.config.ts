@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// GitHub Pages 用户/组织页面: 根路径部署
+// GitHub Pages 项目页面: 子路径部署
 export default defineConfig({
   plugins: [react()],
-  base: '/',
+  base: '/BowenZheng.github.io/',
   build: {
     outDir: 'dist',
     sourcemap: false,
