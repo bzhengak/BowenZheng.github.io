@@ -535,6 +535,30 @@ a { color: inherit; text-decoration: none; }
   #menu-toggle { display: none !important; }
 }
 
+/* 中等视口自适应缩放 (768–1439px):
+   按 1440px 设计等比收紧侧栏/边距/字号, 使笔记本有效分辨率
+   (系统缩放 125%/150% 等) 无需手动缩小浏览器缩放即可还原设计观感 */
+@media (min-width: 768px) and (max-width: 1439.98px) {
+  #sidebar {
+    width: 244px !important;
+    top: 20px !important;
+    left: 20px !important;
+    height: calc(100vh - 40px) !important;
+  }
+  main {
+    margin-left: 260px;
+    padding: 26px 34px 40px 34px;
+  }
+  .hero { padding-top: 2rem; }
+  .hero-name { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+  .hero-role { font-size: clamp(1rem, 1.8vw, 1.3rem); }
+  .hero-grid { gap: 2.25rem; }
+  .cred-row { gap: 7px; }
+  .section-title { font-size: clamp(1.5rem, 2.6vw, 2.1rem); }
+  .section-num { font-size: clamp(2.6rem, 6vw, 3.8rem); }
+  .footer-title { font-size: clamp(1.7rem, 4vw, 2.6rem); }
+}
+
 /* =========================================================
    主区
    ========================================================= */

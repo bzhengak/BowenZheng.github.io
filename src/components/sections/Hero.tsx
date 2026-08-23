@@ -81,13 +81,7 @@ export function Hero() {
           </h1>
 
           <p className="hero-role fade-up" style={{ '--d': '300ms' } as React.CSSProperties}>
-            {t('hero_role_pre')}
-            <span className="hl">{t('hero_role_x')}</span>
-            {t('hero_role_post')}
-          </p>
-
-          <p className="hero-positioning fade-up" style={{ '--d': '420ms' } as React.CSSProperties}>
-            {t('hero_positioning')}
+            {t('hero_tagline')}
           </p>
 
           <div className="cred-row">
@@ -150,7 +144,6 @@ export function Hero() {
               <StatRow value={experiences.length} labelKey="stat_internships" delay="1250ms" />
               <StatRow value={projects.length + earlyProjects.length} labelKey="stat_projects" delay="1330ms" />
               <StatRow value={skills.length} labelKey="stat_domains" delay="1410ms" />
-              <StatRow value={4} labelKey="stat_langs" delay="1490ms" />
             </div>
           </div>
         </aside>
