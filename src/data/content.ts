@@ -13,22 +13,28 @@ export const skills: SkillCategory[] = [
   {
     titleKey: 'skill_cat_genai',
     tags: [
-      'LLM', 'RAG', 'Multi-Agent Systems', 'SFT', 'RL', 'LoRA',
-      'Prompt Engineering', 'Model Evaluation',
+      'LLM', 'RAG', 'Multi-Agent Systems', 'Agent Orchestration',
+      'LangChain / LangGraph', 'SFT', 'RL / GRPO', 'LoRA',
+      'Prompt Engineering', 'Vector Search', 'Model Evaluation',
+      'PyTorch',
     ],
   },
   {
     titleKey: 'skill_cat_ml',
     tags: [
-      'XGBoost / Random Forest / SVM', 'Time Series', 'Feature Engineering',
-      'AUC / KS / LIFT', 'NLP',
+      'XGBoost / Random Forest / SVM', 'Logistic Regression',
+      'Time Series', 'Feature Engineering',
+      'AUC / KS / LIFT', 'Hypothesis Testing', 'NLP',
       'Clustering', 'Hadoop / Spark', 'Tableau', 'Power BI',
       'Web Scraping',
     ],
   },
   {
     titleKey: 'skill_cat_prog',
-    tags: ['Python', 'R', 'SQL', 'Java', 'JavaScript / HTML / CSS', 'Git'],
+    tags: [
+      'Python', 'TypeScript', 'R', 'SQL', 'Java',
+      'JavaScript / HTML / CSS', 'REST API', 'Docker', 'Git',
+    ],
   },
   {
     titleKey: 'skill_cat_consulting',
@@ -36,7 +42,9 @@ export const skills: SkillCategory[] = [
       'Credit Scorecard (A/B/C/F)',
       'Customer Segmentation', 'A/B Testing', 'Trigger Marketing',
       'Enterprise Lifecycle Evaluation',
-      'Financial Analysis', 'Regulatory Compliance',
+      'Requirements Gathering', 'BRD / FRD', 'JIRA / Confluence',
+      'Stakeholder Management', 'Financial Analysis',
+      'Regulatory Compliance',
     ],
   },
   {
@@ -50,8 +58,8 @@ export const skills: SkillCategory[] = [
     titleKey: 'skill_cat_lang',
     tags: [
       'Mandarin (Native)', 'English (Fluent)', 'Cantonese (Conversational)',
-      'German (Basic)', 'Client Alignment', 'Demand Translation','Cross-Stakeholder Collaboration',
-      'Technical Writing',
+      'German (Basic)', 'Client Alignment', 'Demand Translation',
+      'Cross-Stakeholder Collaboration', 'Technical Writing',
     ],
   },
 ];

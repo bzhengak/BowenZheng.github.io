@@ -6,11 +6,14 @@ export default {
     extend: {
       fontFamily: {
         sans: [
+          'Inter',
           'Plus Jakarta Sans',
           '-apple-system',
           'BlinkMacSystemFont',
           'sans-serif',
         ],
+        display: ['Space Grotesk', 'Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
         // 用 CSS 变量驱动，主题切换不写死

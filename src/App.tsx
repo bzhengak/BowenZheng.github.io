@@ -14,6 +14,7 @@ import { Experience } from './components/sections/Experience';
 import { Projects } from './components/sections/Projects';
 import { EarlyProjects } from './components/sections/EarlyProjects';
 import { Extras } from './components/sections/Extras';
+import { FooterCta } from './components/layout/FooterCta';
 
 function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -66,6 +67,7 @@ function AppShell() {
         <Projects />
         <EarlyProjects />
         <Extras />
+        <FooterCta />
       </main>
     </div>
   );

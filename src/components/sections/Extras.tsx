@@ -1,20 +1,37 @@
 import { useI18n } from '../../i18n/I18nProvider';
-import { GlassCard } from '../ui/GlassCard';
+import { SectionHeader } from '../ui/SectionHeader';
 import { useReveal } from '../../hooks/useReveal';
 
 export function Extras() {
   const { t } = useI18n();
   const ref = useReveal<HTMLDivElement>();
+
+  const interests = t('extras_interest_content')
+    .split(/[、,，]/)
+    .map(s => s.trim().replace(/[.。]+$/, ''))
+    .filter(Boolean);
+
   return (
-    <section id="extras" className="mb-20">
-      <h2 className="text-4xl font-bold mb-8 tracking-tight">{t('extras_title')}</h2>
-      <GlassCard ref={ref} className="p-8 reveal" tilt>
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <i className="ri-sparkling-line text-accent mr-3 text-xl" />
+    <section id="extras" className="section" style={{ marginBottom: '4.5rem' }}>
+      <SectionHeader index="07" labelKey="nav_extras" titleKey="extras_title" />
+      <div
+        ref={ref}
+        className="glass-card glass-card--flat reveal"
+        style={{ padding: '26px 28px' }}
+      >
+        <h3 className="text-base font-semibold flex items-center mb-4">
+          <i className="ri-sparkling-line text-accent mr-2.5 text-lg" aria-hidden="true" />
           <span>{t('extras_interest_title')}</span>
         </h3>
-        <p className="text-[15px] font-light">{t('extras_interest_content')}</p>
-      </GlassCard>
+        <div className="flex flex-wrap gap-2">
+          {interests.map(interest => (
+            <span key={interest} className="tag-chip">
+              <span className="tag-chip-dot" />
+              {interest}
+            </span>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,61 +1,50 @@
 import { useI18n } from '../../i18n/I18nProvider';
-import { GlassCard } from '../ui/GlassCard';
-import { Collapsible } from '../ui/Collapsible';
-import { education, type EducationItem } from '../../data/content';
+import { SectionHeader } from '../ui/SectionHeader';
 import { useReveal } from '../../hooks/useReveal';
+import { education } from '../../data/content';
 
-interface EduCardProps {
-  item: EducationItem;
-  delayClass: string;
-}
-
-function EduCard({ item, delayClass }: EduCardProps) {
+function EduNode({ item, index }: { item: (typeof education)[number]; index: number }) {
   const { t } = useI18n();
   const ref = useReveal<HTMLDivElement>();
+  const delayClass = index === 0 ? '' : 'reveal-delay-1';
+
   return (
-    <GlassCard
-      ref={ref}
-      className={`p-8 reveal ${delayClass}`}
-      tilt
-    >
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-xl font-semibold">{item.school}</h3>
-        <span className="text-xs bg-white/5 px-3 py-1 rounded-full font-semibold">
-          {item.period}
-        </span>
-      </div>
-      <p className="text-sm text-accent font-semibold mb-4">{t(item.degKey)}</p>
-      <Collapsible
-        trigger={null}
-        details={
-          <>
-            <p className="text-[15px] font-light leading-relaxed">
-              {t(item.courseKey)}
-            </p>
-            {item.honorKey && (
-              <p className="text-xs text-emerald-500 mt-3 font-semibold">
-                {t(item.honorKey)}
-              </p>
-            )}
-          </>
-        }
-      />
-    </GlassCard>
+    <div ref={ref} className={`tl-item reveal ${delayClass}`}>
+      <span className="tl-node" aria-hidden="true" />
+      <span className="tl-period">{item.period}</span>
+      <h3 className="tl-org">{item.school}</h3>
+      <p className="tl-role" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+        {t(item.degKey)}
+      </p>
+      <p
+        className="text-[0.85rem] font-light leading-relaxed mt-3"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {t(item.courseKey)}
+      </p>
+      {item.honorKey && (
+        <p className="text-xs mt-2 font-semibold text-emerald-500">
+          <i className="ri-award-line mr-1" aria-hidden="true" />
+          {t(item.honorKey)}
+        </p>
+      )}
+    </div>
   );
 }
 
 export function Education() {
   const { t } = useI18n();
+  const trackRef = useReveal<HTMLDivElement>();
+
   return (
-    <section id="education" className="mb-16">
-      <h2 className="text-4xl font-bold mb-8 tracking-tight">{t('edu_title')}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <section id="education" className="section">
+      <SectionHeader index="03" labelKey="nav_education" titleKey="edu_title" />
+      <div ref={trackRef} className="timeline reveal">
+        <div className="timeline-track" aria-hidden="true">
+          <div className="timeline-track-fill" style={{ '--tl-fill': 1 } as React.CSSProperties} />
+        </div>
         {education.map((edu, i) => (
-          <EduCard
-            key={edu.school}
-            item={edu}
-            delayClass={i === 0 ? 'reveal-delay-1' : 'reveal-delay-2'}
-          />
+          <EduNode key={edu.school} item={edu} index={i} />
         ))}
       </div>
     </section>

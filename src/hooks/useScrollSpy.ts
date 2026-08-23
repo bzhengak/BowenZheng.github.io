@@ -19,6 +19,11 @@ export function useScrollSpy(sectionIds: string[], topOffsetPct = 0.2, bottomOff
     const obs = new IntersectionObserver(
       entries => {
         if (isClickScrolling) return;
+        // 页面接近顶部时强制回到第一个 section
+        if (window.scrollY < 160) {
+          setActiveId(sectionIds[0] ?? '');
+          return;
+        }
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             setActiveId(entry.target.id);

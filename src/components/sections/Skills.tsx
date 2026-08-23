@@ -1,46 +1,55 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useI18n } from '../../i18n/I18nProvider';
+import { SectionHeader } from '../ui/SectionHeader';
 import { useReveal } from '../../hooks/useReveal';
 import { skills, skillCategoryTitles } from '../../data/content';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const CATEGORY_ICONS = [
+  'ri-robot-2-line',
+  'ri-bar-chart-box-line',
+  'ri-code-s-slash-line',
+  'ri-shield-check-line',
+  'ri-leaf-line',
+  'ri-translate-2',
+];
+
 export function Skills() {
   const { t, lang } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const revealRef = useReveal<HTMLDivElement>();
-  const hoverTimer = useRef<number | null>(null);
 
   const titles = skillCategoryTitles[lang];
 
-  // GSAP cascade 瀑布: 进入视口时对所有 tag 逐个 fly-in
+  // GSAP 瀑布: 进入视口时所有分类卡片逐个浮现
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const tagEls = container.querySelectorAll<HTMLElement>('.skill-category');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    const cards = container.querySelectorAll<HTMLElement>('.skill-cat-card');
 
     const trigger = ScrollTrigger.create({
       trigger: container,
-      start: 'top 80%',
+      start: 'top 82%',
       once: true,
       onEnter: () => {
-        tagEls.forEach((cat, i) => {
-          const titleEl = cat.querySelector<HTMLElement>('.category-title');
-          if (titleEl) {
-            gsap.fromTo(
-              titleEl,
-              { opacity: 0, y: 16, scale: 0.9 },
-              {
-                opacity: 1, y: 0, scale: 1,
-                duration: 0.6, ease: 'back.out(1.6)',
-                delay: i * 0.06,
-              }
-            );
-          }
+        cards.forEach((card, i) => {
+          gsap.fromTo(
+            card,
+            { opacity: 0, y: 26, scale: 0.96 },
+            {
+              opacity: 1, y: 0, scale: 1,
+              duration: 0.65,
+              ease: 'back.out(1.5)',
+              delay: i * 0.07,
+            }
+          );
         });
       },
     });
@@ -50,69 +59,32 @@ export function Skills() {
     };
   }, []);
 
-  // hover 联动: 激活某个分类, 其他变暗
-  const activate = (idx: number) => {
-    if (hoverTimer.current) {
-      window.clearTimeout(hoverTimer.current);
-      hoverTimer.current = null;
-    }
-    hoverTimer.current = window.setTimeout(() => {
-      setActiveIndex(idx);
-    }, 500);
-  };
-  const deactivate = () => {
-    if (hoverTimer.current) {
-      window.clearTimeout(hoverTimer.current);
-      hoverTimer.current = null;
-    }
-    setActiveIndex(null);
-  };
-
-  // 重置已激活分类的 tag 弹动
-  useEffect(() => {
-    if (activeIndex === null) return;
-    const active = containerRef.current?.querySelectorAll<HTMLElement>('.skill-category')[activeIndex];
-    if (!active) return;
-    const tags = active.querySelectorAll<HTMLElement>('.skill-tag');
-    gsap.fromTo(
-      tags,
-      { scale: 0.7, y: 6 },
-      { scale: 1, y: 0, duration: 0.4, stagger: 0.025, ease: 'back.out(2.2)' }
-    );
-  }, [activeIndex]);
-
   return (
-    <section id="skills" className="mb-16">
-      <h2 className="text-4xl font-bold mb-8 tracking-tight">{t('skill_title')}</h2>
+    <section id="skills" className="section">
+      <SectionHeader index="02" labelKey="nav_skills" titleKey="skill_title" />
       <div
         ref={(node) => {
           containerRef.current = node;
           (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
-        className="glass-card skills-container reveal"
+        className="skills-grid reveal"
       >
-        {skills.map((cat, i) => {
-          const isActive = activeIndex === i;
-          const isDimmed = activeIndex !== null && activeIndex !== i;
-          return (
-            <div
-              key={cat.titleKey}
-              className={`skill-category ${isActive ? 'active' : ''} ${isDimmed ? 'dimmed' : ''}`}
-              onMouseEnter={() => activate(i)}
-              onMouseLeave={deactivate}
-              onFocus={() => activate(i)}
-              onBlur={deactivate}
-              tabIndex={0}
-            >
-              <span className="category-title">{titles[i]}</span>
-              <div className="tags-wrapper">
-                {cat.tags.map(tag => (
-                  <span key={tag} className="skill-tag">{tag}</span>
-                ))}
-              </div>
+        {skills.map((cat, i) => (
+          <article key={cat.titleKey} className="skill-cat-card">
+            <div className="skill-cat-head">
+              <span className="skill-cat-icon">
+                <i className={CATEGORY_ICONS[i] ?? 'ri-star-line'} aria-hidden="true" />
+              </span>
+              <span className="skill-cat-name">{titles[i]}</span>
+              <span className="skill-cat-count">{String(cat.tags.length).padStart(2, '0')}</span>
             </div>
-          );
-        })}
+            <div className="skill-tags-wrap">
+              {cat.tags.map(tag => (
+                <span key={tag} className="skill-tag">{tag}</span>
+              ))}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
