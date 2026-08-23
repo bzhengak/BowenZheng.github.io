@@ -1,24 +1,44 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/BowenZheng.github.io/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <meta name="description" content="Bowen Zheng · AI Advisory Consultant · MSc in AI @ HKUST" />
+    <meta
+      name="description"
+      content="Bowen Zheng — MSc in AI @ HKUST bridging LLM engineering (RAG, Multi-Agent, fine-tuning) with Big-4 trained consulting delivery. Portfolio, experience and projects."
+    />
+    <meta property="og:title" content="Bowen ZHENG — AI × Business Analytics" />
+    <meta
+      property="og:description"
+      content="MSc AI @ HKUST · Ex-EY FSO · LLM / RAG / Multi-Agent · Credit Risk & Consulting Delivery"
+    />
+    <meta property="og:type" content="website" />
     <meta name="theme-color" content="#0a0b12" />
     <title>Bowen ZHENG — AI & BA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link
       href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/BowenZheng.github.io/assets/index-DKGhUdfx.js"></script>
-    <link rel="stylesheet" crossorigin href="/BowenZheng.github.io/assets/index-mgKrhvgl.css">
+    <script>
+      // 首帧主题同步, 防止深色默认下出现白屏闪烁
+      (function () {
+        try {
+          var saved = localStorage.getItem('zb.theme');
+          var theme = saved === 'light' ? 'light' : 'dark';
+          document.documentElement.classList.remove('dark', 'light');
+          document.documentElement.classList.add(theme);
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/BowenZheng.github.io/assets/index-XCAcHqJf.js"></script>
+    <link rel="stylesheet" crossorigin href="/BowenZheng.github.io/assets/index-B1f-AcXc.css">
   </head>
   <body>
     <div id="root"></div>
