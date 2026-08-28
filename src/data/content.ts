@@ -16,7 +16,7 @@ export const skills: SkillCategory[] = [
       'LLM', 'RAG', 'Multi-Agent Systems', 'Agent Orchestration',
       'LangChain / LangGraph', 'SFT', 'RL / GRPO', 'LoRA',
       'Prompt Engineering', 'Vector Search', 'Model Evaluation',
-      'PyTorch',
+      'AI Agent Workflows', 'RAG Knowledge Base', 'PyTorch',
     ],
   },
   {
@@ -183,6 +183,13 @@ export const projects: ProjectItem[] = [
     summaryKey: 'proj_p4_summary',
     details: ['proj_p4_d1', 'proj_p4_d2', 'proj_p4_d3'],
     tags: ['JIRA','Java', 'Power BI', 'Cybersecurity Report', 'SQL'],
+  },
+  {
+    titleKey: 'proj_p5_title',
+    period: 'Ongoing',
+    summaryKey: 'proj_p5_summary',
+    details: ['proj_p5_d1', 'proj_p5_d2', 'proj_p5_d3'],
+    tags: ['AI Agent', 'RAG', 'Knowledge Base', 'Workflow Automation'],
   },
 ];
 
