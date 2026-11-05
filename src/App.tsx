@@ -4,8 +4,8 @@ import { ThemeProvider } from './hooks/useTheme';
 import { useLenis } from './hooks/useLenis';
 import { Cursor } from './components/layout/Cursor';
 import { ProgressBar } from './components/layout/ProgressBar';
-import { Sidebar } from './components/layout/Sidebar';
-import { MobileHeader } from './components/layout/MobileHeader';
+import { Dock } from './components/layout/Dock';
+import { VelocitySkew } from './components/layout/VelocitySkew';import { MobileHeader } from './components/layout/MobileHeader';
 import { Hero } from './components/sections/Hero';
 import { Summary } from './components/sections/Summary';
 import { Skills } from './components/sections/Skills';
@@ -54,9 +54,10 @@ function AppShell() {
   return (
     <div className="app-shell">
       <div ref={scrollGradientRef} className="scroll-gradient-bg" />
+      <VelocitySkew />
       <Cursor />
       <ProgressBar lenisRef={lenisRef} />
-      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <Dock mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       <MobileHeader onMenuToggle={() => setMobileOpen(v => !v)} />
       <main>
         <Hero />

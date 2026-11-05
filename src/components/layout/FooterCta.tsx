@@ -1,5 +1,6 @@
 import { useI18n } from '../../i18n/I18nProvider';
 import { useReveal } from '../../hooks/useReveal';
+import { Magnetic } from '../ui/Magnetic';
 
 export function FooterCta() {
   const { t } = useI18n();
@@ -13,10 +14,12 @@ export function FooterCta() {
         <p className="footer-sub">{t('footer_sub')}</p>
 
         <div className="footer-actions">
-          <a href="mailto:bowen.zheng.owen@gmail.com" className="cta-btn cta-btn--primary">
-            <i className="ri-mail-line" aria-hidden="true" />
-            bowen.zheng.owen@gmail.com
-          </a>
+          <Magnetic>
+            <a href="mailto:bowen.zheng.owen@gmail.com" className="cta-btn cta-btn--primary">
+              <i className="ri-mail-line" aria-hidden="true" />
+              bowen.zheng.owen@gmail.com
+            </a>
+          </Magnetic>
           <a
             href="https://www.linkedin.com/in/bowen-zheng-owen"
             target="_blank"

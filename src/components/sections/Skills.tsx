@@ -1,12 +1,8 @@
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import { SectionHeader } from '../ui/SectionHeader';
 import { useReveal } from '../../hooks/useReveal';
 import { skills, skillCategoryTitles } from '../../data/content';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const CATEGORY_ICONS = [
   'ri-robot-2-line',
@@ -17,74 +13,67 @@ const CATEGORY_ICONS = [
   'ri-translate-2',
 ];
 
+/**
+ * Skills — D5 Tabs Cloud
+ * - 左侧分类导航 (hover / click 切换), 右侧标签云 stagger 跳入
+ * - 切换时通过 key={active} 重挂载重播 chipIn 动画
+ */
 export function Skills() {
-  const { t, lang } = useI18n();
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const { lang } = useI18n();
+  const titles = skillCategoryTitles[lang];
+  const [active, setActive] = useState(0);
   const revealRef = useReveal<HTMLDivElement>();
 
-  const titles = skillCategoryTitles[lang];
-
-  // GSAP 瀑布: 进入视口时所有分类卡片逐个浮现
+  // 语言切换时防越界
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (active >= skills.length) setActive(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) return;
+  const tabProps = (i: number) => ({
+    role: 'tab' as const,
+    'aria-selected': i === active,
+    onClick: () => setActive(i),
+    onMouseEnter: () => setActive(i),
+    onFocus: () => setActive(i),
+  });
 
-    const cards = container.querySelectorAll<HTMLElement>('.skill-cat-card');
-
-    const trigger = ScrollTrigger.create({
-      trigger: container,
-      start: 'top 82%',
-      once: true,
-      onEnter: () => {
-        cards.forEach((card, i) => {
-          gsap.fromTo(
-            card,
-            { opacity: 0, y: 26, scale: 0.96 },
-            {
-              opacity: 1, y: 0, scale: 1,
-              duration: 0.65,
-              ease: 'back.out(1.5)',
-              delay: i * 0.07,
-            }
-          );
-        });
-      },
-    });
-
-    return () => {
-      trigger.kill();
-    };
-  }, []);
+  const tags = skills[active]?.tags ?? [];
 
   return (
     <section id="skills" className="section">
       <SectionHeader index="02" labelKey="nav_skills" titleKey="skill_title" />
-      <div
-        ref={(node) => {
-          containerRef.current = node;
-          (revealRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-        }}
-        className="skills-grid reveal"
-      >
-        {skills.map((cat, i) => (
-          <article key={cat.titleKey} className="skill-cat-card">
-            <div className="skill-cat-head">
-              <span className="skill-cat-icon">
+
+      <div ref={revealRef} className="skx reveal">
+        <div className="skct" role="tablist" aria-label="Skill categories">
+          {skills.map((cat, i) => (
+            <button
+              key={cat.titleKey}
+              type="button"
+              className={`sktb ${i === active ? 'on' : ''}`}
+              tabIndex={0}
+              {...tabProps(i)}
+            >
+              <span className="sktb-icon">
                 <i className={CATEGORY_ICONS[i] ?? 'ri-star-line'} aria-hidden="true" />
               </span>
-              <span className="skill-cat-name">{titles[i]}</span>
-              <span className="skill-cat-count">{String(cat.tags.length).padStart(2, '0')}</span>
-            </div>
-            <div className="skill-tags-wrap">
-              {cat.tags.map(tag => (
-                <span key={tag} className="skill-tag">{tag}</span>
-              ))}
-            </div>
-          </article>
-        ))}
+              <b>{titles[i] ?? cat.titleKey}</b>
+              <span className="sktb-count">{String(cat.tags.length).padStart(2, '0')}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="skcloud" role="tabpanel" key={`${active}-${lang}`}>
+          {tags.map((tag, i) => (
+            <span
+              key={tag}
+              className="skill-tag sktag-in"
+              style={{ '--d': `${i * 26}ms` } as React.CSSProperties}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );
