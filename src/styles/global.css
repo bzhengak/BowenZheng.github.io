@@ -1735,6 +1735,7 @@ main {
 
 .bands {
   display: flex;
+  flex-wrap: wrap; /* 卡片过窄时第三条带换行, 避免横向溢出 */
   gap: 8px;
   margin-top: 14px;
   flex: 1;
@@ -1752,10 +1753,8 @@ main {
   flex-direction: column;
   justify-content: space-between;
   gap: 8px;
-  flex-grow: var(--w, 1);
-  flex-basis: 0;
-  flex-shrink: 1;
-  min-width: 104px; /* 保证最长单词 ("Consulting") 不被中间截断 */
+  flex: var(--w, 1) 1 112px; /* basis 112: 保证 "Consulting"/"Multi-Agent" 不被截断; 放不下一行时自动 wrap */
+  min-width: 112px;
   transition: flex-grow 0.55s cubic-bezier(0.3, 0.8, 0.3, 1), border-color 0.3s, box-shadow 0.3s;
   outline: none;
 }
@@ -1790,12 +1789,13 @@ main {
 .band-ks {
   position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* chips 按 band 实际宽度换行, 不再横向裁剪 */
+  width: 100%;
+  max-width: 100%;
   gap: 5px;
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 0.35s 0.12s, transform 0.35s 0.12s;
-  min-width: 150px;
 }
 
 .band:hover .band-ks,
