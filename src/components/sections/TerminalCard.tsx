@@ -10,7 +10,7 @@ interface TermLine {
  * 终端自述卡
  * - 逐行打字动画, 全部 8 行 ≈ 5 秒打完 (按字符数占比分配时间片)
  * - 点击 / 回车可重播; 语言切换时随 key={lang} 重挂载自动重播
- * - reduced-motion: 直接静态呈现全部行
+ * - 打字始终执行 (系统"减少动态效果"只影响光标闪烁样式, 不关闭打字)
  */
 export function TerminalCard() {
   const { t, lang } = useI18n();
@@ -28,25 +28,11 @@ export function TerminalCard() {
       [t('term_l4_in'), t('term_l4_out')],
     ];
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (reduced) {
-      setDisplay(
-        pairs.flatMap(([a, b]) => [
-          { cls: 'in' as const, text: a },
-          { cls: 'out' as const, text: b },
-        ])
-      );
-      setActiveIdx(-1);
-      return;
-    }
-
     const wait = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
-    // 纯打字预算 4200ms + 行间停顿 + 起手 340ms ≈ 5s
-    const TYPE_BUDGET = 4200;
-    const lens = pairs.flatMap(p => [p[0].length, p[1].length]);
-    const sum = lens.reduce((a, b) => a + b, 0) || 1;
+    // 打字总预算 (含行间停顿): 截止时间驱动 — 每步按"剩余时间/剩余字符"
+    // 自适应调度, 补偿每字符 setState 渲染耗时, 机器再慢也 ~5s 内打完
+    const TYPE_BUDGET = 4000;
 
     const run = async () => {
       setDisplay([]);
@@ -54,11 +40,13 @@ export function TerminalCard() {
       await wait(340);
       if (cancelled) return;
 
+      const lens = pairs.flatMap(p => [p[0].length, p[1].length]);
+      let remainingChars = lens.reduce((a, b) => a + b, 0) || 1;
+      const endAt = performance.now() + TYPE_BUDGET;
+
       for (const [cmd, out] of pairs) {
         for (const [cls, text] of [['in', cmd], ['out', out]] as Array<['in' | 'out', string]>) {
           if (cancelled) return;
-          const slice = (text.length / sum) * TYPE_BUDGET;
-          const per = Math.max(6, slice / Math.max(text.length, 1));
 
           setDisplay(prev => [...prev, { cls, text: '' }]);
           setActiveIdx(idx => idx + 1);
@@ -72,10 +60,13 @@ export function TerminalCard() {
               if (last) next[next.length - 1] = { cls, text: filled };
               return next;
             });
+            remainingChars = Math.max(0, remainingChars - 1);
+            const per = Math.max(4, (endAt - performance.now()) / Math.max(remainingChars, 1));
             await wait(per);
           }
 
-          await wait(cls === 'in' ? 70 : 120);
+          // 行间停顿同样不吃预算: 接近截止时压缩停顿
+          await wait(Math.min(cls === 'in' ? 70 : 110, Math.max(25, endAt - performance.now())));
           if (cancelled) return;
         }
       }

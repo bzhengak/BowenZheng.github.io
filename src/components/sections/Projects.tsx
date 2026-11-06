@@ -160,24 +160,29 @@ function HCard({ item }: { item: ProjectItem }) {
   );
 }
 
+/** 横卷启用条件: ≥900px 且鼠标精确指针 (触屏/窄屏回退纵向) */
+const HORIZ_QUERY = '(min-width: 900px) and (hover: hover) and (pointer: fine)';
+
 /**
  * Projects — P2 Pinned Horizontal Scroll
- * - 桌面 (≥1024px 且未开 reduced-motion): 区块吸顶, 滚动驱动轨道横移 + 速度歪斜
+ * - 横卷 (≥900px 精确指针): 区块吸顶, 滚动驱动轨道横移 + 速度歪斜
  * - 其他情形自动回退为竖排卡片
  */
 export function Projects() {
   const { t, lang } = useI18n();
-  const [pinned, setPinned] = useState(false);
+  // 首次渲染即判定, 避免闪一帧纵向
+  const [pinned, setPinned] = useState(
+    () => window.matchMedia(HORIZ_QUERY).matches
+  );
 
   const hsecRef = useRef<HTMLDivElement | null>(null);
   const htrackRef = useRef<HTMLDivElement | null>(null);
   const hprogRef = useRef<HTMLSpanElement | null>(null);
 
-  // 视口判定: ≥1024px 且未开 reduced-motion 才启用吸顶横卷
+  // 判定: ≥900px 且非触屏 (reduced-motion 不再回退纵向, 只关闭歪斜)
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const update = () => setPinned(mq.matches && !reduced);
+    const mq = window.matchMedia(HORIZ_QUERY);
+    const update = () => setPinned(mq.matches);
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
@@ -220,6 +225,7 @@ export function Projects() {
     let raf = 0;
     let lastY = window.scrollY;
     let vel = 0;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const loop = () => {
       raf = 0;
@@ -232,7 +238,7 @@ export function Projects() {
         const dy = window.scrollY - lastY;
         lastY = window.scrollY;
         vel = vel * 0.8 + dy * 0.2;
-        const skew = Math.max(-6, Math.min(6, vel * 0.07));
+        const skew = reduced ? 0 : Math.max(-6, Math.min(6, vel * 0.07));
 
         track.style.transform = `translate3d(${(-p * maxX).toFixed(1)}px, 0, 0) skewX(${skew.toFixed(2)}deg)`;
 

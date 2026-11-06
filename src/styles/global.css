@@ -1755,7 +1755,7 @@ main {
   flex-grow: var(--w, 1);
   flex-basis: 0;
   flex-shrink: 1;
-  min-width: 38px;
+  min-width: 104px; /* 保证最长单词 ("Consulting") 不被中间截断 */
   transition: flex-grow 0.55s cubic-bezier(0.3, 0.8, 0.3, 1), border-color 0.3s, box-shadow 0.3s;
   outline: none;
 }
@@ -1781,12 +1781,10 @@ main {
   position: relative;
   font-size: 0.76rem;
   font-weight: 600;
-  white-space: nowrap;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  line-height: 1.4;
+  overflow-wrap: break-word; /* 窄态时自动换行, 不截断 */
 }
 
 .band-ks {
@@ -2140,11 +2138,11 @@ main {
 /* 吸顶横卷下的详情折叠稍快一点 */
 .hsec .collapsible-wrapper { transition-duration: 0.3s; }
 
-@media (max-width: 1023px), (prefers-reduced-motion: reduce) {
+@media (max-width: 899px) {
   .hsec, .hsticky, .htrack { height: auto; }
   .hsticky { position: static; width: auto; margin-left: 0; padding: 4px 0; }
   .htrack { display: block; transform: none !important; width: auto; padding: 0; }
-  .hintro, .hmeta { display: none; }
+  .hintro, .hmeta, .hpin-head { display: none; }
 }
 
 /* =========================================================
